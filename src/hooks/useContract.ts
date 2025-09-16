@@ -1,5 +1,5 @@
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
-import { CONTRACT_ADDRESSES, SECURE_POLL_VAULT_ABI } from '@/lib/contracts';
+import { CONTRACT_ADDRESSES, SECURE_POLL_VAULT_ABI, isContractDeployed } from '@/lib/contracts';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -11,6 +11,11 @@ export const useSecurePollVault = () => {
   const createPoll = async (title: string, description: string, duration: number, optionCount: number) => {
     if (!address) {
       toast.error('Please connect your wallet first');
+      return;
+    }
+
+    if (!isContractDeployed()) {
+      toast.error('Contract not deployed yet. This is a demo mode.');
       return;
     }
 
@@ -27,7 +32,7 @@ export const useSecurePollVault = () => {
       return hash;
     } catch (err) {
       console.error('Error creating poll:', err);
-      toast.error('Failed to create poll');
+      toast.error('Failed to create poll. Please check your wallet connection.');
     } finally {
       setIsLoading(false);
     }
@@ -36,6 +41,11 @@ export const useSecurePollVault = () => {
   const vote = async (pollId: number, choice: number) => {
     if (!address) {
       toast.error('Please connect your wallet first');
+      return;
+    }
+
+    if (!isContractDeployed()) {
+      toast.error('Contract not deployed yet. This is a demo mode.');
       return;
     }
 
@@ -54,7 +64,7 @@ export const useSecurePollVault = () => {
       return hash;
     } catch (err) {
       console.error('Error voting:', err);
-      toast.error('Failed to cast vote');
+      toast.error('Failed to cast vote. Please check your wallet connection.');
     } finally {
       setIsLoading(false);
     }
@@ -95,31 +105,43 @@ export const useSecurePollVault = () => {
 };
 
 export const usePollData = (pollId: number) => {
-  const { data: pollInfo, isLoading: isLoadingInfo } = useReadContract({
+  const { address } = useAccount();
+  
+  const { data: pollInfo, isLoading: isLoadingInfo, error: pollInfoError } = useReadContract({
     address: CONTRACT_ADDRESSES.SECURE_POLL_VAULT,
     abi: SECURE_POLL_VAULT_ABI,
     functionName: 'getPollInfo',
     args: [BigInt(pollId)],
+    query: {
+      enabled: isContractDeployed() && pollId > 0,
+    },
   });
 
-  const { data: pollResults, isLoading: isLoadingResults } = useReadContract({
+  const { data: pollResults, isLoading: isLoadingResults, error: pollResultsError } = useReadContract({
     address: CONTRACT_ADDRESSES.SECURE_POLL_VAULT,
     abi: SECURE_POLL_VAULT_ABI,
     functionName: 'getPollResults',
     args: [BigInt(pollId)],
+    query: {
+      enabled: isContractDeployed() && pollId > 0,
+    },
   });
 
-  const { data: hasVoted } = useReadContract({
+  const { data: hasVoted, error: hasVotedError } = useReadContract({
     address: CONTRACT_ADDRESSES.SECURE_POLL_VAULT,
     abi: SECURE_POLL_VAULT_ABI,
     functionName: 'hasVoted',
     args: [BigInt(pollId), address],
+    query: {
+      enabled: !!address && isContractDeployed() && pollId > 0,
+    },
   });
 
   return {
     pollInfo,
     pollResults,
-    hasVoted,
+    hasVoted: hasVoted || false,
     isLoading: isLoadingInfo || isLoadingResults,
+    error: pollInfoError || pollResultsError || hasVotedError,
   };
 };

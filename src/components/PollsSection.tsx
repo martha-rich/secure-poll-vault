@@ -1,5 +1,6 @@
 import PollCard from "./PollCard";
 import { CreatePollDialog } from "./CreatePollDialog";
+import { DemoModeBanner } from "./DemoModeBanner";
 import { useState } from "react";
 
 const PollsSection = () => {
@@ -54,6 +55,8 @@ const PollsSection = () => {
           </p>
           <CreatePollDialog onPollCreated={() => window.location.reload()} />
         </div>
+
+        <DemoModeBanner />
 
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
           {polls.map((poll) => (

@@ -2,8 +2,13 @@ import { Address } from 'viem';
 
 // Contract addresses (to be deployed)
 export const CONTRACT_ADDRESSES = {
-  SECURE_POLL_VAULT: '0x0000000000000000000000000000000000000000' as Address, // To be updated after deployment
+  SECURE_POLL_VAULT: '0x1234567890123456789012345678901234567890' as Address, // Mock address for demo
 } as const;
+
+// Check if contract is deployed
+export const isContractDeployed = () => {
+  return CONTRACT_ADDRESSES.SECURE_POLL_VAULT !== '0x0000000000000000000000000000000000000000';
+};
 
 // Contract ABIs
 export const SECURE_POLL_VAULT_ABI = [
