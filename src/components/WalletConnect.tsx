@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Wallet, Shield } from "lucide-react";
+import { Wallet, CheckCircle } from "lucide-react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 
@@ -74,8 +74,8 @@ const WalletConnect = () => {
                     </Button>
                     
                     <div className="privacy-badge flex items-center gap-1">
-                      <Shield size={16} />
-                      <span>Verified</span>
+                      <CheckCircle size={16} />
+                      <span>Connected</span>
                     </div>
                   </div>
                 );

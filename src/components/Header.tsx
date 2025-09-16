@@ -1,4 +1,4 @@
-import { Shield, Vote } from "lucide-react";
+import { Vote, Lock, Users } from "lucide-react";
 import WalletConnect from "./WalletConnect";
 
 const Header = () => {
@@ -12,8 +12,11 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Vote className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">VoteSecure</span>
+              <div className="relative">
+                <Vote className="h-8 w-8 text-primary" />
+                <Lock className="h-4 w-4 text-blue-500 absolute -top-1 -right-1" />
+              </div>
+              <span className="text-2xl font-bold text-primary">SecurePoll</span>
             </div>
           </div>
           

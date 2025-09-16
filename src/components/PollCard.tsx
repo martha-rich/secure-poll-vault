@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Lock, Users, TrendingUp } from "lucide-react";
+import { Lock, Users, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { VoteDialog } from "./VoteDialog";
+import { usePollData } from "@/hooks/useContract";
 
 interface PollOption {
   id: string;
@@ -12,52 +14,63 @@ interface PollOption {
 }
 
 interface PollCardProps {
+  pollId: number;
   question: string;
   options: PollOption[];
   showResults?: boolean;
   totalVotes?: number;
+  isActive?: boolean;
+  endTime?: number;
 }
 
-const PollCard = ({ question, options, showResults = false, totalVotes = 0 }: PollCardProps) => {
+const PollCard = ({ pollId, question, options, showResults = false, totalVotes = 0, isActive = true, endTime }: PollCardProps) => {
   const [selectedOption, setSelectedOption] = useState<string>("");
-  const [hasVoted, setHasVoted] = useState(false);
+  const { pollInfo, hasVoted, isLoading } = usePollData(pollId);
 
-  const handleVote = () => {
-    if (selectedOption) {
-      setHasVoted(true);
-    }
-  };
+  const isExpired = endTime ? Date.now() / 1000 > endTime : false;
+  const canVote = isActive && !isExpired && !hasVoted;
 
   return (
     <Card className="poll-card">
       <div className="space-y-4">
         <div className="flex items-start justify-between">
-          <h3 className="text-xl font-semibold text-foreground">{question}</h3>
-          <div className="privacy-badge">
-            <Lock size={14} />
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-foreground">{question}</h3>
+            <div className="flex items-center gap-2 mt-1">
+              {isActive && !isExpired ? (
+                <div className="flex items-center gap-1 text-green-600">
+                  <CheckCircle size={14} />
+                  <span className="text-xs">Active</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Clock size={14} />
+                  <span className="text-xs">Ended</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-blue-600">
+                <Lock size={14} />
+                <span className="text-xs">Encrypted</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {!hasVoted && !showResults ? (
+        {canVote ? (
           <div className="space-y-4">
-            <RadioGroup value={selectedOption} onValueChange={setSelectedOption}>
-              {options.map((option) => (
-                <div key={option.id} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.id} id={option.id} />
-                  <Label htmlFor={option.id} className="text-base cursor-pointer">
-                    {option.text}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Your vote will be encrypted using FHE technology and stored securely on the blockchain.
+              </p>
+            </div>
             
-            <Button 
-              onClick={handleVote}
-              disabled={!selectedOption}
-              className="btn-democratic w-full"
-            >
-              Submit Vote
-            </Button>
+            <VoteDialog
+              pollId={pollId}
+              pollTitle={question}
+              options={options.map(opt => opt.text)}
+              hasVoted={!!hasVoted}
+              onVoteCast={() => window.location.reload()}
+            />
           </div>
         ) : (
           <div className="space-y-3">
